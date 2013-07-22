@@ -1,0 +1,19 @@
+path = "C:\Reallocatelogfile"
+$output_file = 'customer_vol_reallocate_results.csv'
+$filter = "*.log"
+
+$files = get-childitem -path $path -filter $filter
+
+$pat1 = "Hot-spot Factor: (.+)$"
+$pat2 = "Result Ratio: (.+)$"
+$pat3 = "Expected Ratio: (.+)$"
+
+
+"Aggr,Hot-spot Factor,Result Ratio,Expected Ratio" > $output_file 
+
+foreach ($file in $files) {
+        $res1 = Select-String -Path $file -Pattern $pat1 -AllMatches | % { $_.Matches[0].Groups[1].Value }
+  	$res2 = Select-String -Path $file -Pattern $pat2 -AllMatches | % { $_.Matches[0].Groups[1].Value }
+		$res3 = Select-String -Path $file -Pattern $pat3 -AllMatches | % { $_.Matches[0].Groups[1].Value }
+		-join($file,",",$res1,",",$res2,",",$res3) >> $output_file }
+ 
