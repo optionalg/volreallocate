@@ -1,0 +1,17 @@
+import-module DataONTAP
+
+$root = "root"
+$controller = Read-Host "What is the IP/Hostname of the NetApp Controller"
+$password = Read-Host "What is the password of the root account "
+$ntapuser = "$root"
+$ntappw = "$password"
+$pw = convertto-securestring $ntappw -asplaintext -force
+$cred = new-object -typename system.management.automation.pscredential -argumentlist $ntapuser,$pw
+ 
+$cont = Connect-NaController $controller -Credential $cred -https
+ 
+get-navol -controller $cont | foreach-object {
+    $_.Name
+    $volstr = "/vol/" + $_.Name
+    $logfile = "/vol/vol0/ReadReallocate-" + $_.Name
+    Start-NaReallocateMeasure -Path $volstr -Controller $cont -RunOnce -LogFile $logfile }
