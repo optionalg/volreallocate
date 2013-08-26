@@ -1,0 +1,21 @@
+### Get Information ###
+$controller = Read-Host "Please enter the IP of the NetApp Controller"
+$root = Read-Host "Please enter the root login username"
+$password = Read-Host "Please enter the root login password"
+Get-NaAggr | Format-Table Name
+$aggr = Read-Host "Which aggregate would you like to run reallocate on its volumes"
+$ntapuser = "$root"
+$ntappw = "$password"
+
+### Convert Password to plain text###
+$pw = convertto-securestring $ntappw -asplaintext -force
+$cred = new-object -typename system.management.automation.pscredential -argumentlist $ntapuser,$pw
+
+### Connect to the controller ###
+$cont = Connect-NaController $controller -Credential $cred -https
+
+### Run Reallocate ###
+get-navol -controller $cont -aggregate $aggr| foreach-object {
+    $_.Name
+    $volstr = "/vol/" + $_.Name
+    Start-NaReallocate -PreserveLogicalBlockNumbers -Path $volstr -Controller $cont -RunOnce }
